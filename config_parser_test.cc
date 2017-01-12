@@ -9,3 +9,47 @@ TEST(NginxConfigParserTest, SimpleConfig) {
 
   EXPECT_TRUE(success);
 }
+
+/*
+ * The following is copied from the 11 Jan lecture.
+ */
+
+// foo bar;
+TEST(NginxConfigTest, ToString) {
+  NginxConfigStatement statement;
+  statement.tokens_.push_back("foo");
+  statement.tokens_.push_back("bar");
+
+  EXPECT_EQ(statement.ToString(0), "foo bar;\n");
+}
+
+class NginxStringConfigTest : public ::testing::Test {
+  protected:
+    bool ParseString(const std::string config_string) {
+      std::stringstream config_stream(config_string);
+      return parser_.Parse(&config_stream, &out_config_);
+    }
+    NginxConfigParser parser_;
+    NginxConfig out_config_;
+};
+
+TEST_F(NginxStringConfigTest, SimpleConfigStream) {
+  EXPECT_TRUE(ParseString("foo bar;"));
+  EXPECT_EQ(1, out_config_.statements_.size()) << "Config has one statement";
+  EXPECT_EQ("foo", out_config_.statements_.at(0)->tokens_.at(0));
+}
+
+TEST_F(NginxStringConfigTest, InvalidConfig) {
+  EXPECT_FALSE(ParseString("foo bar"));
+}
+
+TEST_F(NginxStringConfigTest, Nested) {
+  EXPECT_TRUE(ParseString("damm { foo bar; }"));
+}
+
+/*
+ * The bug we found in class.
+ */
+TEST_F(NginxStringConfigTest, UnmatchedBraces) {
+  EXPECT_FALSE(ParseString("damm { foo bar; "));
+}

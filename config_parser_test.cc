@@ -76,3 +76,9 @@ TEST_F(NginxStringConfigTest, DeeplyNested) {
   nest += "}\n";
   EXPECT_TRUE(ParseString(nest));
 }
+
+TEST_F(NginxStringConfigTest, SampleFile) {
+  NginxConfigParser parser;
+  NginxConfig out_config;
+  EXPECT_TRUE(parser.Parse("example_config_2", &out_config));
+}
